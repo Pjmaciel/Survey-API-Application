@@ -6,6 +6,7 @@ module Types
     field :survey, Types::Survey, null: false
     field :options, [Types::Option], null: true
     field :responses, [Types::Response], null: true
+    field :required, Boolean, null: false
 
     def responses
       object.responses
