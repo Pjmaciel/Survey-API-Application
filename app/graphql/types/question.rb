@@ -3,7 +3,12 @@ module Types
     field :id, ID, null: false
     field :question_text, String, null: false
     field :question_type, String, null: false
-    field :survey, Survey, null: false
-    field :options, [Option], null: true
+    field :survey, Types::Survey, null: false
+    field :options, [Types::Option], null: true
+    field :responses, [Types::Response], null: true
+
+    def responses
+      object.responses
+    end
   end
 end
