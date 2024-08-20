@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :response do
-    question { nil }
-    user { nil }
-    response_text { "MyString" }
+    question
+    user
+    response_text { "Option 1" }
   end
 end

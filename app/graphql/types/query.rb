@@ -1,20 +1,35 @@
+# app/graphql/types/query.rb
 module Types
   class Query < Types::BaseObject
-    field :survey_results, [Types::SurveyResult], null: false do
-      argument :survey_id, ID, required: true
-      argument :filter_by_user, ID, required: false
-      argument :filter_by_date, String, required: false
-      argument :order_by, String, required: false, default_value: "created_at"
-      argument :order_direction, String, required: false, default_value: "asc"
+    field :surveys, [Types::Survey], null: false do
+      description "Fetch all surveys for the current user"
     end
 
-    def survey_results(survey_id:, filter_by_user: nil, filter_by_date: nil, order_by: "created_at", order_direction: "asc")
-      results = ::Survey.find(survey_id).responses
+    field :survey, Types::Survey, null: false do
+      argument :id, ID, required: true
+      description "Fetch a single survey by ID"
+    end
 
-      results = results.where(user_id: filter_by_user) if filter_by_user.present?
-      results = results.where("created_at::date = ?", filter_by_date) if filter_by_date.present?
+    field :closed_surveys, [Types::Survey], null: false do
+      description "Fetch all closed surveys accessible by the current user"
+    end
 
-      results.order("#{order_by} #{order_direction}")
+    def surveys
+      context[:current_user].surveys
+    end
+
+    def survey(id:)
+      context[:current_user].surveys.find(id)
+    end
+
+    def closed_surveys
+      user = context[:current_user]
+
+      if user.coordinator?
+        Survey.where(status: 'closed')
+      else
+        Survey.joins(:responses).where(status: 'closed', responses: { user_id: user.id }).distinct
+      end
     end
   end
 end

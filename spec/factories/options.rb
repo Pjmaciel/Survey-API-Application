@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :option do
-    question { nil }
-    option_text { "MyString" }
+    association :question
+    option_text { 'Sample Option' }
   end
 end
