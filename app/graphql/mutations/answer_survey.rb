@@ -8,18 +8,12 @@ module Mutations
     def resolve(survey_id:, responses:)
       survey = Survey.find(survey_id)
 
-
       answers = {}
 
       responses.each do |response_input|
-        user = User.find(response_input.user_id)
-        raise GraphQL::ExecutionError, "Invalid user" unless user
-
+        user = context[:current_user]
         question = survey.questions.find(response_input.question_id)
-
-
         validate_response(question, response_input.response_text)
-
 
         answers[question.id] = Response.create!(
           question: question,
@@ -28,11 +22,15 @@ module Mutations
         )
       end
 
+      # Verifica se todas as perguntas obrigatórias foram respondidas
       survey.questions.each do |question|
         if question.required? && !answers.key?(question.id)
           raise GraphQL::ExecutionError, "The question #{question.id} is mandatory and has not been answered."
         end
       end
+
+      # Atualiza o status da pesquisa, sem tentar atualizar o título
+      survey.update_columns(status: 'closed')
 
       survey
     end
